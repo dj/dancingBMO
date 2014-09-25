@@ -211,7 +211,6 @@ draw = function(mouseX, mouseY, t) {
     document.getElementById('canvas').style.background = bgColor;
   }
   time = Math.sin(t / 100) * 10;
-  console.log(time);
   return drawBMO(mouseX - (BMO_WIDTH / 2), mouseY - (BMO_HEIGHT / 3), time);
 };
 

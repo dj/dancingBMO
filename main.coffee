@@ -223,7 +223,7 @@ draw = (mouseX, mouseY, t) ->
 
   # Draw BMO!
   time = (Math.sin(t / 100) * 10)
-  console.log time
+  #console.log time
   drawBMO mouseX - (BMO_WIDTH / 2), mouseY - (BMO_HEIGHT / 3), time
 
 drawLoop = () ->

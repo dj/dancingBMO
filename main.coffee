@@ -22,6 +22,11 @@ ctx.canvas.height = window.innerHeight;
 mouseX = 200
 mouseY = 100
 
+# Time
+initT = Date.now()
+last = initT
+interval = 33.3
+
 getMousePos = (canvas, evt) ->
   rect = canvas.getBoundingClientRect()
   root = document.documentElement
@@ -31,9 +36,13 @@ getMousePos = (canvas, evt) ->
   x: mouseX
   y: mouseY
 
-# window.onload = ->
-#   callback = (evt) -> getMousePos(canvas, evt)
-#   canvas.addEventListener 'mousemove', callback
+hideCursor = () ->
+  document.getElementById('canvas').style.cursor = 'none'
+
+window.onload = ->
+  hideCursor()
+  callback = (evt) -> getMousePos(canvas, evt)
+  canvas.addEventListener 'mousemove', callback
 
 toRads = (degrees) ->
   degrees * Math.PI / 180
@@ -46,7 +55,6 @@ drawTriangle = (x, y, size) ->
   ctx.save()
   ctx.fillStyle = BMO_TRIANGLE_COLOR
   ctx.strokeStyle = BMO_TRIANGLE_COLOR
-  ctx.lineWidth = 5
 
   base = size / 2
   height = Math.floor(Math.sqrt((size * size) - (base * base)))
@@ -65,7 +73,6 @@ drawButton = (x, y, size, color) ->
   ctx.save()
   ctx.fillStyle = color
   ctx.strokeStyle = color
-  ctx.lineWidth = 5
 
   ctx.beginPath()
   ctx.moveTo x, y
@@ -147,7 +154,7 @@ drawRightArm = (x, y, len) ->
   ctx.strokeStyle = BMO_FRONT_COLOR
   ctx.lineWidth = (0.9 * GRID)
 
-  ctx.quadraticCurveTo x + len, y, x + len, y - (1.25 * len)
+  ctx.quadraticCurveTo x + +len, y, x + len, y - (1.25 * len)
 
   ctx.stroke()
   ctx.restore()
@@ -160,7 +167,7 @@ drawLeftLeg = (x, y, len) ->
   ctx.strokeStyle = BMO_FRONT_COLOR
   ctx.lineWidth = (0.9 * GRID)
 
-  ctx.quadraticCurveTo x - (0.5 * GRID), y + len, x, y + (2 * len)
+  ctx.quadraticCurveTo x - (2 * GRID), y + len, x, y + (2 * len)
 
   ctx.stroke()
   ctx.restore()
@@ -173,19 +180,21 @@ drawRightLeg = (x, y, len) ->
   ctx.strokeStyle = BMO_FRONT_COLOR
   ctx.lineWidth = (0.9 * GRID)
 
-  ctx.quadraticCurveTo x + (0.5 * GRID), y + len, x, y + (2 * len)
+  ctx.quadraticCurveTo x + (2 * GRID), y + len, x, y + (2 * len)
 
   ctx.stroke()
   ctx.restore()
 
-drawBMO = (x, y) ->
-  # draw arms
-  drawLeftArm x + (0.5 * GRID), y + (8 * GRID), (3 * GRID)
-  drawRightArm x + (9.5 * GRID), y + (8 * GRID), (3 * GRID)
+drawBMO = (x, y, t) ->
+  ctx.lineCap = 'round'
+
+
+  drawLeftArm x + (0.5 * GRID), y + (8 * GRID), (3 * GRID) + t
+  drawRightArm x + (9.5 * GRID), y + (8 * GRID), (3 * GRID) + t
 
   # draw legs
-  drawLeftLeg x + (2 * GRID), y + (13 * GRID), (2.5 * GRID)
-  drawRightLeg x + (8 * GRID), y + (13 * GRID), (2.5 * GRID)
+  drawLeftLeg x + (2 * GRID), y + (13 * GRID), (2.5 * GRID) + (t / 2)
+  drawRightLeg x + (8 * GRID), y + (13 * GRID), (2.5 * GRID) + (t / 2)
 
   # draw body
   drawRoundRect x, y, BMO_WIDTH, BMO_HEIGHT, 10, BMO_FRONT_COLOR
@@ -204,13 +213,30 @@ drawBMO = (x, y) ->
   drawButton x + (8 * GRID), y + (12 * GRID), (0.4 * GRID), BMO_GREEN_BTN
   drawButton x + (7 * GRID), y + (13.5 * GRID), (0.6 * GRID), BMO_RED_BTN
 
-draw = (mouseX, mouseY) ->
-  ctx.lineCap = 'round'
+draw = (mouseX, mouseY, t) ->
+  # Clear the canvas
   ctx.clearRect 0, 0, canvas.width, canvas.height
-  drawBMO mouseX, mouseY
+
+  # Random Color
+  bgColor = '#'+Math.random().toString(16).substr(-6);
+  document.getElementById('canvas').style.background = bgColor if (t % 3 == 1)
+
+  # Draw BMO!
+  time = (Math.sin(t / 100) * 10)
+  console.log time
+  drawBMO mouseX - (BMO_WIDTH / 2), mouseY - (BMO_HEIGHT / 3), time
 
 drawLoop = () ->
   window.requestAnimationFrame drawLoop
-  draw mouseX, mouseY
+
+  now = Date.now()
+  delta = now - last
+  # console.log delta
+
+  if delta > interval
+    last = now - (delta % interval)
+    time = (now - initT)
+    # console.log time
+    draw mouseX, mouseY, time
 
 drawLoop()
